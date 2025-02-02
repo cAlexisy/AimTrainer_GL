@@ -27,7 +27,7 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(3.38279f, 0.2f, -2.18319f));
+Camera camera(glm::vec3(3.38279f, 0.2f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -39,7 +39,7 @@ unsigned int loadTexture(const char* path);
 
 //Limites dentro del campo
 const float minX = -1.35f, maxX = 3.38279f;   // Límites en X
-const float minZ = -2.40f, maxZ = 2.37f;   // Límites en Z
+const float minZ = -0.95f, maxZ = 2.37f;   // Límites en Z
 const float minY = 0.2f, maxY = 0.2f;    // Mantener la altura fija
 
 //Limites esfera
