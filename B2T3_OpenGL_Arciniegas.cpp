@@ -14,6 +14,10 @@
 #define STB_IMAGE_IMPLEMENTATION 
 #include <learnopengl/stb_image.h>
 
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -23,7 +27,7 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
+Camera camera(glm::vec3(3.38279f, 0.2f, -2.18319f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -33,11 +37,31 @@ float lastFrame = 0.0f;
 
 unsigned int loadTexture(const char* path);
 
-// Juego
+//Limites dentro del campo
+const float minX = -1.35f, maxX = 3.38279f;   // Límites en X
+const float minZ = -2.40f, maxZ = 2.37f;   // Límites en Z
+const float minY = 0.2f, maxY = 0.2f;    // Mantener la altura fija
 
-float meta[2] = { 62.0f, 72.0f };
+//Limites esfera
+
+const float minX_sphere = -0.43f, maxX_sphere = 2.42f;
+const float minY_sphere = 0.05f, maxY_sphere = 0.05f; // La esfera ahora está más cerca
+const float minZ_sphere = 0.0f, maxZ_sphere = 1.4f;
+
+// Indica si el arma está soltada o en mano.
+bool weaponDropped = false;
 
 
+// Posición en la que se soltó el arma.
+glm::vec3 weaponDropPosition;
+
+
+// Inicializar la posición de la esfera dentro del rango permitido
+glm::vec3 spherePosition(1.0f, minY_sphere, 0.7f); // Posición inicial dentro del rango
+bool shotFired = false;
+
+// Variable auxiliar para evitar que se active varias veces en una sola pulsación.
+bool gKeyPressed = false;
 
 // Posición de la Luz
 glm::vec3 lightPos(1.2f, 5.0f, 2.0f);
@@ -46,7 +70,6 @@ glm::vec3 lightPos(1.2f, 5.0f, 2.0f);
 glm::vec4 luzNoche = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
 glm::vec4 luzDia = glm::vec4(0.51f, 0.82f, 0.95f, 1.0f);
 glm::vec4 luzEntorno = luzNoche;
-
 
 
 int main()
@@ -79,6 +102,7 @@ int main()
     //stbi_set_flip_vertically_on_load(true);
 
     glEnable(GL_DEPTH_TEST);
+    bool isPlayingSound = false;
 
     // shaders
     Shader lightingShader("shaders/project_casters.vs", "shaders/project_casters.fs");
@@ -92,6 +116,7 @@ int main()
     ///Model lamp2("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/lamp/lamp.obj");
     Model ball("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/ball2/ball.obj");
     Model target("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/target/target.obj");
+    Model sphere("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/sphere/sphere.obj");
     
 
     
@@ -195,6 +220,16 @@ int main()
 
         processInput(window);
 
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingSound) {
+            if (!PlaySound(TEXT("./sound/gun.wav"), NULL, SND_FILENAME | SND_ASYNC)) {
+                std::cerr << "Error al reproducir el sonido." << std::endl;
+            }
+            isPlayingSound = true;  // Marcar que el sonido se está reproduciendo
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+            isPlayingSound = false;  // Permitir que el sonido se reproduzca nuevamente
+        }
+
         glClearColor(luzEntorno.x, luzEntorno.y, luzEntorno.z, luzEntorno.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -254,10 +289,6 @@ int main()
         }
 
         
-        
-        
-        
-
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
@@ -274,6 +305,29 @@ int main()
         model = glm::scale(model, glm::vec3(0.3f));
         lightingShader.setMat4("model", model);
         camp.Draw(lightingShader);
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !shotFired)
+        {
+            float newX = spherePosition.x + ((rand() % 10 - 5) * 0.5f);
+            float newZ = spherePosition.z + ((rand() % 10 - 5) * 0.5f);
+
+            // Mantener en los límites sin std::clamp
+            if (newX < minX_sphere) newX = minX_sphere;
+            if (newX > maxX_sphere) newX = maxX_sphere;
+            if (newZ < minZ_sphere) newZ = minZ_sphere;
+            if (newZ > maxZ_sphere) newZ = maxZ_sphere;
+
+            // Asignar la nueva posición dentro del rango permitido
+            spherePosition.x = newX;
+            spherePosition.z = newZ;
+            spherePosition.y = minY_sphere; // Mantener en la altura fija [0.18, 0.2]
+
+            shotFired = true;
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+        {
+            shotFired = false;
+        }
         
         // weapon
         lightingShader.setVec3("dirLight.ambient", 0.0f, 0.0f, 0.0f);
@@ -281,47 +335,58 @@ int main()
         // Configura la matriz de modelo para el arma
         model = glm::mat4(1.0f);
 
-        // Posición relativa a la cámara en su propio espacio
-         // Ajusta para que esté en la posición correcta
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-        {
-            weaponOffset = glm::vec3(0.0f, -0.09f, 0.0f); // Ajusta para que esté en la posición correcta
+        if (!weaponDropped) {
+            // Renderizado en mano: el arma se mueve con la cámara.
+            glm::mat4 model = glm::mat4(1.0f);
+            glm::vec3 weaponOffset;
+
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+                weaponOffset = glm::vec3(0.0f, -0.09f, 0.0f);
+            else
+                weaponOffset = glm::vec3(0.1f, -0.13f, 0.3f);
+
+            // Posición relativa a la cámara.
+            glm::vec3 weaponPosition = camera.Position
+                + (camera.Right * weaponOffset.x)
+                + (camera.Up * weaponOffset.y)
+                + (camera.Front * weaponOffset.z);
+
+            // Mantener el arma en su posición calculada sin modificar el eje Y en este caso
+            model = glm::translate(model, weaponPosition);
+
+            // Rotar el arma para que se alinee con la cámara.
+            glm::mat4 rotationMatrix = glm::mat4(1.0f);
+            rotationMatrix[0] = glm::vec4(camera.Right, 0.0f);
+            rotationMatrix[1] = glm::vec4(camera.Up, 0.0f);
+            rotationMatrix[2] = glm::vec4(-camera.Front, 0.0f);
+            model = model * rotationMatrix;
+
+            // Escalar y ajustar la rotación para un tamaño adecuado
+            model = glm::scale(model, glm::vec3(0.01f));
+            model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            // Aplicar la transformación al shader de iluminación
+            lightingShader.setMat4("model", model);
+            weapon.Draw(lightingShader);
         }
         else {
-            weaponOffset = glm::vec3(0.1f, -0.13f, 0.3f);
+            // Renderizado del arma soltada: permanece en la posición donde estaba la cámara al presionar G.
+            glm::mat4 model = glm::mat4(1.0f);
+
+            // Se utiliza la posición guardada en weaponDropPosition.
+            // Asegurarse de ajustar el eje Y a 0.25 cuando el arma está en el suelo.
+            weaponDropPosition.y = -0.28f;
+
+            model = glm::translate(model, weaponDropPosition);
+
+            // Ajustar escala y rotación para que se vea natural en el suelo.
+            model = glm::scale(model, glm::vec3(0.01f));
+            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+            // Aplicar la transformación al shader de iluminación
+            lightingShader.setMat4("model", model);
+            weapon.Draw(lightingShader);
         }
-        // Calcula la posición del arma en el espacio del mundo
-        glm::vec3 weaponPosition = camera.Position
-            + (camera.Right * weaponOffset.x)  // Movimiento a la derecha/izquierda
-            + (camera.Up * weaponOffset.y)     // Movimiento arriba/abajo
-            + (camera.Front * weaponOffset.z); // Movimiento adelante/atrás
-
-        // Aplica la traslación
-        model = glm::translate(model, weaponPosition);
-
-        // Asegura que el arma rote con la cámara correctamente
-        glm::mat4 rotationMatrix = glm::mat4(1.0f);
-        rotationMatrix[0] = glm::vec4(camera.Right, 0.0f);
-        rotationMatrix[1] = glm::vec4(camera.Up, 0.0f);
-        rotationMatrix[2] = glm::vec4(-camera.Front, 0.0f); // -Front para corregir dirección
-        rotationMatrix[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        // Aplica la rotación al modelo
-        model = model * rotationMatrix;
-
-        // Aplica la escala del arma (ajusta según el tamaño del modelo)
-        model = glm::scale(model, glm::vec3(0.01f));
-
-        // Si el arma está girada incorrectamente, ajusta la rotación final
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-        // Pasa la matriz de modelo al shader
-        lightingShader.setMat4("model", model);
-
-        // Dibuja el arma
-        weapon.Draw(lightingShader);
-
-
 
         //ball
         lightingShader.setVec3("dirLight.ambient", 0.0f, 0.0f, 0.0f);
@@ -338,6 +403,14 @@ int main()
         model = glm::scale(model, glm::vec3(0.06f));
         lightingShader.setMat4("model", model);
         target.Draw(lightingShader);
+
+        //sphere
+        lightingShader.setVec3("dirLight.ambient", 0.0f, 0.0f, 0.0f);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, spherePosition);
+        model = glm::scale(model, glm::vec3(0.2f));
+        lightingShader.setMat4("model", model);
+        sphere.Draw(lightingShader);
 
 
         lightCubeShader.use();
@@ -417,18 +490,49 @@ unsigned int loadTexture(char const* path)
 }
 
 void processInput(GLFWwindow* window)
-{
+{   
+    // Cerrar la ventana con Escape.
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    // Detectar la pulsación de la tecla G.
+        if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && !gKeyPressed) {
+            if (!weaponDropped) {
+                // Al presionar G, se guarda la posición actual de la cámara.
+                weaponDropPosition = camera.Position;
+                weaponDropped = true;
+            }
+            else {
+                // Si se quiere permitir recoger el arma, se podría alternar el estado.
+                weaponDropped = false;
+            }
+            gKeyPressed = true;
+        }
+    if (glfwGetKey(window, GLFW_KEY_G) == GLFW_RELEASE) {
+        gKeyPressed = false;
+    }
+
+    // Procesamiento de movimiento de la cámara (W, A, S, D, etc.)
+    glm::vec3 newPosition = camera.Position;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        newPosition += glm::vec3(camera.Front.x, 0.0f, camera.Front.z) * camera.MovementSpeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        newPosition -= glm::vec3(camera.Front.x, 0.0f, camera.Front.z) * camera.MovementSpeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        newPosition -= glm::normalize(glm::cross(glm::vec3(camera.Front.x, 0.0f, camera.Front.z), camera.Up)) * camera.MovementSpeed * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        newPosition += glm::normalize(glm::cross(glm::vec3(camera.Front.x, 0.0f, camera.Front.z), camera.Up)) * camera.MovementSpeed * deltaTime;
+
+    // Aplicar restricciones al movimiento (ejemplo: mantener dentro de ciertos límites).
+    if (newPosition.x >= minX && newPosition.x <= maxX &&
+        newPosition.z >= minZ && newPosition.z <= maxZ)
+    {
+        camera.Position.x = newPosition.x;
+        camera.Position.z = newPosition.z;
+    }
+    // Fijar la altura de la cámara.
+    camera.Position.y = minY;
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -459,12 +563,29 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
-
+int scrollCount = 0;
+const int maxScrolls = 20;
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.ProcessMouseScroll(yoffset);
+    
+
+    // Permitir el scroll hacia abajo (zoom out) incluso si hemos alcanzado el máximo de 20 desplazamientos hacia arriba
+    if (yoffset < 0)
+    {
+        camera.ProcessMouseScroll(yoffset);  // Procesar el desplazamiento del scroll hacia abajo
+        if (scrollCount > 0)  // Decrementar el contador si es mayor que 0
+        {
+            scrollCount--;
+        }
+    }
+    // Permitir el scroll hacia arriba (zoom in) solo si no hemos alcanzado el máximo de 20 desplazamientos
+    else if (scrollCount < maxScrolls)
+    {
+        camera.ProcessMouseScroll(yoffset);  // Procesar el desplazamiento del scroll hacia arriba
+        scrollCount++;  // Incrementar el contador de desplazamientos
+    }
 }
 
 
