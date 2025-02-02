@@ -23,7 +23,7 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -89,6 +89,7 @@ int main()
     Model camp("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/shooting/camp.obj");
     Model weapon("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/weapon/weapon.obj");
     Model lamp("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/lamp/lamp.obj");
+    ///Model lamp2("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/lamp/lamp.obj");
     Model ball("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/ball2/ball.obj");
     Model target("C:/Users/Bolivar/Documents/Visual Studio 2022/OpenGL/OpenGL/model/target/target.obj");
     
@@ -134,16 +135,31 @@ int main()
         13,14,15,
     };
 
-
+    
     // positions of the point lights
     glm::vec3 pointLightPositions[] = {
-        glm::vec3(5.0f, 8.0f, 0.0f),
-        glm::vec3(-5.0f, 0.0f, 0.0f),
-        glm::vec3(-7.63793f,0.0f, 0.5302f),
-        glm::vec3(4.6182f, 0.0f, 0.5758f),
-        glm::vec3(3.72545f, 0.0f, 0.485541f),
-        
+        //glm::vec3(-1.0f, 0.35f, 0.7f),
+        ///glm::vec3(1.0f, 0.35f, 0.7f),
+        glm::vec3(2.4f, 0.35f, 0.7f),
+        //glm::vec3(2.0f, 0.35f, 0.7f)
     };
+
+    glm::vec3 spotLightPositions[] = {
+            glm::vec3(-1.0f, 0.35f, -0.7f),
+
+            glm::vec3(1.0f, 0.35f, -0.7f),
+
+            glm::vec3(0.0f, 0.35f, -0.7f),
+
+            glm::vec3(-1.0f, 0.35f, 1.85f),
+
+            glm::vec3(1.0f, 0.35f, 1.85f),
+
+            glm::vec3(0.0f, 0.35f, 1.85f),
+
+    };
+
+    
 
 
     unsigned int VBO, VAO, EBO;
@@ -184,6 +200,8 @@ int main()
 
         lightingShader.use();
         lightingShader.setVec3("viewPos", camera.Position);
+
+        
         lightingShader.setFloat("material.shininess", 32.0f);
         // directional light
         lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
@@ -191,9 +209,10 @@ int main()
         lightingShader.setVec3("dirLight.diffuse", 0.05f, 0.05f, 0.05f);
         lightingShader.setVec3("dirLight.specular", 0.2f, 0.2f, 0.2f);
 
+        
         // point light N
         string pT1 = "pointLights[";
-        for (unsigned int i = 0; i < 11; i++) {
+        for (unsigned int i = 0; i < 15; i++) {
             lightingShader.setVec3(pT1 + std::to_string(i) + "].position", pointLightPositions[i]);
             lightingShader.setVec3(pT1 + std::to_string(i) + "].ambient", 0.15f, 0.15f, 0.15f);
             lightingShader.setVec3(pT1 + std::to_string(i) + "].diffuse", 0.9f, 0.9f, 0.9f);
@@ -201,20 +220,43 @@ int main()
             lightingShader.setFloat(pT1 + std::to_string(i) + "].constant", 1.0f);
             lightingShader.setFloat(pT1 + std::to_string(i) + "].linear", 0.09);
             lightingShader.setFloat(pT1 + std::to_string(i) + "].quadratic", 0.032);
+
         }
 
-        lightingShader.setVec3("spotLight.position", camera.Position);
-        lightingShader.setVec3("spotLight.direction", camera.Front);
-        lightingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-        lightingShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-        lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-        lightingShader.setFloat("spotLight.constant", 1.0f);
-        lightingShader.setFloat("spotLight.linear", 0.09);
-        lightingShader.setFloat("spotLight.quadratic", 0.032);
-        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        // point light N
 
+        string pT2 = "spotLight[";
+        for (unsigned int i = 0; i < 11; i++) {
+            lightingShader.setVec3(pT2 + std::to_string(i) + "].position", spotLightPositions[i]);
+            lightingShader.setVec3(pT2 + std::to_string(i) + "].direction", 0.0f, -1.0f, 0.0f);
+            lightingShader.setVec3(pT2 + std::to_string(i) + "].ambient", 0.15f, 0.15f, 0.15f);
+            lightingShader.setVec3(pT2 + std::to_string(i) + "].diffuse", 0.9f, 0.9f, 0.9f);
+            lightingShader.setVec3(pT2 + std::to_string(i) + "].specular", 1.0f, 1.0f, 1.0f);
+            lightingShader.setFloat(pT2 + std::to_string(i) + "].constant", 1.0f);
+            lightingShader.setFloat(pT2 + std::to_string(i) + "].linear", 0.09);
+            lightingShader.setFloat(pT2 + std::to_string(i) + "].quadratic", 0.032);
+            lightingShader.setFloat(pT2 + std::to_string(i) + "].cutOff", glm::cos(glm::radians(23.5f)));
+            lightingShader.setFloat(pT2 + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(27.0f)));
 
+        }
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        {
+            lightingShader.setVec3(pT2 + std::to_string(7) + "].position", camera.Position);
+            lightingShader.setVec3(pT2 + std::to_string(7) + "].direction", camera.Front);
+            lightingShader.setVec3(pT2 + std::to_string(7) + "].ambient", 0.15f, 0.15f, 0.15f);
+            lightingShader.setVec3(pT2 + std::to_string(7) + "].diffuse", 0.9f, 0.9f, 0.9f);
+            lightingShader.setVec3(pT2 + std::to_string(7) + "].specular", 1.0f, 1.0f, 1.0f);
+            lightingShader.setFloat(pT2 + std::to_string(7) + "].constant", 1.0f);
+            lightingShader.setFloat(pT2 + std::to_string(7) + "].linear", 0.09);
+            lightingShader.setFloat(pT2 + std::to_string(7) + "].quadratic", 0.032);
+            lightingShader.setFloat(pT2 + std::to_string(7) + "].cutOff", glm::cos(glm::radians(12.5f)));
+            lightingShader.setFloat(pT2 + std::to_string(7) + "].outerCutOff", glm::cos(glm::radians(15.0f)));
+        }
+
+        
+        
+        
+        
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -304,14 +346,27 @@ int main()
         lightCubeShader.setMat4("view", view);
         model = glm::mat4(1.0f);
         lightCubeShader.setMat4("model", model);
-
-        for (unsigned int i = 0; i < 6; i++) {
+        
+        
+        for (unsigned int i = 0; i < 1; i++) {
             model = glm::mat4(1.0f);
             model = glm::translate(model, pointLightPositions[i]);
-            model = glm::scale(model, glm::vec3(0.05f));
+            model = glm::scale(model, glm::vec3(0.2f));
             lightCubeShader.setMat4("model", model);
             lamp.Draw(lightCubeShader);
         }
+
+        for (unsigned int i = 0; i < 5; i++) {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, spotLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f));
+            lightCubeShader.setMat4("model", model);
+            lamp.Draw(lightCubeShader);
+        }
+        
+
+        
+
 
 
         glfwSwapBuffers(window);
