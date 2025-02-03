@@ -231,19 +231,12 @@ int main()
 
 	glm::vec3 spotLightPositions[] = {
 			glm::vec3(-1.0f, 0.35f, -0.7f),
-
 			glm::vec3(1.0f, 0.35f, -0.7f),
-
 			glm::vec3(0.0f, 0.35f, -0.7f),
-
 			glm::vec3(-1.0f, 0.35f, 1.85f),
-
 			glm::vec3(1.0f, 0.35f, 1.85f),
-
 			glm::vec3(0.0f, 0.35f, 1.85f),
-
 	};
-
 
 	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
@@ -270,7 +263,6 @@ int main()
 
 	//Inicializar la mira
 	setupCrosshair();
-
 	glm::vec3 weaponOffset = glm::vec3(0.0f, -0.13f, 0.0f);
 
 	while (!glfwWindowShouldClose(window))
@@ -310,7 +302,6 @@ int main()
 		lightingShader.setVec3("dirLight.diffuse", 0.05f, 0.05f, 0.05f);
 		lightingShader.setVec3("dirLight.specular", 0.2f, 0.2f, 0.2f);
 
-
 		// point light N
 		string pT1 = "pointLights[";
 		for (unsigned int i = 0; i < 15; i++) {
@@ -321,11 +312,8 @@ int main()
 			lightingShader.setFloat(pT1 + std::to_string(i) + "].constant", 1.0f);
 			lightingShader.setFloat(pT1 + std::to_string(i) + "].linear", 0.09);
 			lightingShader.setFloat(pT1 + std::to_string(i) + "].quadratic", 0.032);
-
 		}
-
 		// point light N
-
 		string pT2 = "spotLight[";
 		for (unsigned int i = 0; i < 11; i++) {
 			lightingShader.setVec3(pT2 + std::to_string(i) + "].position", spotLightPositions[i]);
@@ -338,7 +326,6 @@ int main()
 			lightingShader.setFloat(pT2 + std::to_string(i) + "].quadratic", 0.032);
 			lightingShader.setFloat(pT2 + std::to_string(i) + "].cutOff", glm::cos(glm::radians(23.5f)));
 			lightingShader.setFloat(pT2 + std::to_string(i) + "].outerCutOff", glm::cos(glm::radians(27.0f)));
-
 		}
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
@@ -353,8 +340,6 @@ int main()
 			lightingShader.setFloat(pT2 + std::to_string(7) + "].cutOff", glm::cos(glm::radians(12.5f)));
 			lightingShader.setFloat(pT2 + std::to_string(7) + "].outerCutOff", glm::cos(glm::radians(15.0f)));
 		}
-
-
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -362,7 +347,6 @@ int main()
 		lightingShader.setMat4("view", view);
 		glm::mat4 model = glm::mat4(1.0f);
 		lightingShader.setMat4("model", model);
-
 
 		//camp
 		lightingShader.setVec3("dirLight.ambient", 0.0f, 0.0f, 0.0f);
@@ -378,7 +362,6 @@ int main()
 			float newX = minX_sphere + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (maxX_sphere - minX_sphere)));
 			float newY = minY_sphere + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (maxY_sphere - minY_sphere))); // Altura aleatoria
 			float newZ = minZ_sphere + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (maxZ_sphere - minZ_sphere)));
-
 			// Asignar la nueva posición dentro del rango permitido
 			spherePosition.x = newX;
 			spherePosition.y = newY; // Ahora la altura también varía
@@ -449,7 +432,6 @@ int main()
 			lightingShader.setMat4("model", model);
 			weapon.Draw(lightingShader);
 		}
-
 		//target
 		currentX += xSpeed * xDirection * deltaTime;  // Actualiza la posición en X
 		currentY += ySpeed * yDirection * deltaTime;  // Actualiza la posición en Y
@@ -491,14 +473,12 @@ int main()
 		lightingShader.setMat4("model", model);
 		sphere.Draw(lightingShader);
 
-
 		lightCubeShader.use();
 		lightCubeShader.setVec3("viewPos", camera.Position);
 		lightCubeShader.setMat4("projection", projection);
 		lightCubeShader.setMat4("view", view);
 		model = glm::mat4(1.0f);
 		lightCubeShader.setMat4("model", model);
-
 
 		for (unsigned int i = 0; i < 1; i++) {
 			model = glm::mat4(1.0f);
@@ -524,7 +504,6 @@ int main()
 	glfwTerminate();
 	return 0;
 }
-
 
 unsigned int loadTexture(char const* path)
 {
@@ -562,7 +541,6 @@ unsigned int loadTexture(char const* path)
 
 	return textureID;
 }
-
 void processInput(GLFWwindow* window)
 {
 	// Cerrar la ventana con Escape.
@@ -608,7 +586,6 @@ void processInput(GLFWwindow* window)
 	camera.Position.y = minY;
 
 }
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -617,7 +594,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
-
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
