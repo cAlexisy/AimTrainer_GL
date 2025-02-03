@@ -1,4 +1,4 @@
-﻿#include <glad/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
@@ -148,6 +148,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	bool isPlayingSound = false;
 
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL)
@@ -170,7 +171,6 @@ int main()
 	}
 
 	glEnable(GL_DEPTH_TEST);
-	bool isPlayingSound = false;
 
 	// shaders
 	Shader lightingShader("shaders/project_casters.vs", "shaders/project_casters.fs");
@@ -178,11 +178,11 @@ int main()
 	Shader crosshairShader("shaders/shader_crosshair.vs", "shaders/shader_crosshair.fs");
 
 	//modelos
-	Model camp("C:/Users/agust/OneDrive/Documentos/Visual Studio 2022/OpenGl/OpenGl/model/Shooting/camp.obj");
-	Model weapon("C:/Users/agust/OneDrive/Documentos/Visual Studio 2022/OpenGl/OpenGl/model/Weapon/weapon.obj");
-	Model lamp("C:/Users/agust/OneDrive/Documentos/Visual Studio 2022/OpenGl/OpenGl/model/Lamp/lamp.obj");
-	Model target("C:/Users/agust/OneDrive/Documentos/Visual Studio 2022/OpenGl/OpenGl/model/Target/target.obj");
-	Model sphere("C:/Users/agust/OneDrive/Documentos/Visual Studio 2022/OpenGl/OpenGl/model/sphere/bola.obj");
+	Model camp("C:/Users/User/Documents/Visual Studio 2022/OpenGL/OpenGL/model/Shooting/camp.obj");
+	Model weapon("C:/Users/User/Documents/Visual Studio 2022/OpenGL/OpenGL/model/Weapon/weapon.obj");
+	Model lamp("C:/Users/User/Documents/Visual Studio 2022/OpenGL/OpenGL/model/Lamp/lamp.obj");
+	Model target("C:/Users/User/Documents/Visual Studio 2022/OpenGL/OpenGL/model/Target/target.obj");
+	Model sphere("C:/Users/User/Documents/Visual Studio 2022/OpenGL/OpenGL/model/sphere/bola.obj");
 
 	float vertices[] = {
 		// positions          // colors           // texture coords (note that we changed them to 'zoom in' on our texture image)
@@ -273,7 +273,6 @@ int main()
 
 	glm::vec3 weaponOffset = glm::vec3(0.0f, -0.13f, 0.0f);
 
-	// Bucle principal del juego: Se ejecuta hasta que el usuario cierre la ventana
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -399,7 +398,7 @@ int main()
 		model = glm::mat4(1.0f);
 
 		if (!weaponDropped) {
-			// Renderizado en mano: el arma se mueve con la c mara.
+			// Renderizado en mano: el arma se mueve con la c�mara.
 			glm::mat4 model = glm::mat4(1.0f);
 			glm::vec3 weaponOffset;
 
@@ -408,45 +407,45 @@ int main()
 			else
 				weaponOffset = glm::vec3(0.1f, -0.13f, 0.3f);
 
-			// Posici n relativa a la c mara.
+			// Posici�n relativa a la c�mara.
 			glm::vec3 weaponPosition = camera.Position
 				+ (camera.Right * weaponOffset.x)
 				+ (camera.Up * weaponOffset.y)
 				+ (camera.Front * weaponOffset.z);
 
-			// Mantener el arma en su posici n calculada sin modificar el eje Y en este caso
+			// Mantener el arma en su posici�n calculada sin modificar el eje Y en este caso
 			model = glm::translate(model, weaponPosition);
 
-			// Rotar el arma para que se alinee con la c mara.
+			// Rotar el arma para que se alinee con la c�mara.
 			glm::mat4 rotationMatrix = glm::mat4(1.0f);
 			rotationMatrix[0] = glm::vec4(camera.Right, 0.0f);
 			rotationMatrix[1] = glm::vec4(camera.Up, 0.0f);
 			rotationMatrix[2] = glm::vec4(-camera.Front, 0.0f);
 			model = model * rotationMatrix;
 
-			// Escalar y ajustar la rotaci n para un tama o adecuado
+			// Escalar y ajustar la rotaci�n para un tama�o adecuado
 			model = glm::scale(model, glm::vec3(0.01f));
 			model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-			// Aplicar la transformaci n al shader de iluminaci n
+			// Aplicar la transformaci�n al shader de iluminaci�n
 			lightingShader.setMat4("model", model);
 			weapon.Draw(lightingShader);
 		}
 		else {
-			// Renderizado del arma soltada: permanece en la posici n donde estaba la c mara al presionar G.
+			// Renderizado del arma soltada: permanece en la posici�n donde estaba la c�mara al presionar G.
 			glm::mat4 model = glm::mat4(1.0f);
 
-			// Se utiliza la posici n guardada en weaponDropPosition.
-			// Asegurarse de ajustar el eje Y a 0.25 cuando el arma est  en el suelo.
+			// Se utiliza la posici�n guardada en weaponDropPosition.
+			// Asegurarse de ajustar el eje Y a 0.25 cuando el arma est� en el suelo.
 			weaponDropPosition.y = -0.28f;
 
 			model = glm::translate(model, weaponDropPosition);
 
-			// Ajustar escala y rotaci n para que se vea natural en el suelo.
+			// Ajustar escala y rotaci�n para que se vea natural en el suelo.
 			model = glm::scale(model, glm::vec3(0.01f));
 			model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-			// Aplicar la transformaci n al shader de iluminaci n
+			// Aplicar la transformaci�n al shader de iluminaci�n
 			lightingShader.setMat4("model", model);
 			weapon.Draw(lightingShader);
 		}
@@ -521,6 +520,7 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
 	glfwTerminate();
 	return 0;
 }
@@ -656,8 +656,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	else if (scrollCount < maxScrolls)
 	{
 		camera.ProcessMouseScroll(yoffset);  // Procesar el desplazamiento del scroll hacia arriba
-		scrollCount++;  // Incrementar el contador de desplazamientos
+		scrollCount++;  // Incrementar el contador de desplazamientos<<
 	}
 }
-
-
