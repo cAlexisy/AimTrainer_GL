@@ -1,3 +1,5 @@
+//link git hub: https://github.com/cAlexisy/2024B_GR1CC_GR1/edit/main
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
